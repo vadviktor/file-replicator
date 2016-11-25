@@ -5,7 +5,7 @@ require 'file_split_join_binary/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'file-split-join-binary'
-  spec.version       = FileSplitJoinBinary::VERSION
+  spec.version       = FileReplicator::VERSION
   spec.authors       = ['Viktor (Icon) VAD']
   spec.email         = ['vad.viktor@gmail.com']
 
@@ -21,7 +21,6 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'activesupport', '5.0.0.1'
   spec.add_dependency 'slop', '4.4.1'
   spec.add_dependency 'pastel', '0.6.1'
   spec.add_dependency 'ruby-progressbar', '1.8.1'
@@ -29,7 +28,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler', '1.13.6'
   spec.add_development_dependency 'rake', '11.3.0'
   spec.add_development_dependency 'minitest', '5.9.1'
-
-  spec.add_development_dependency 'byebug'
-  spec.add_development_dependency 'awesome_print'
 end

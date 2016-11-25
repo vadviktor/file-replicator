@@ -1,17 +1,18 @@
-# File splitter and joiner [name undecided]
+# :construction: This gem is not released yet :exclamation:
 
-    This gem is not released until it reaches v1
+# File replicator, a split-join command line tool
 
 ## Installation
 
-    gem install whatever
+    gem install file-replicator
 
 ## Usage
 
-  
+    TODO
 
 ## Development
 
+    TODO
 
 ## Contributing
 
