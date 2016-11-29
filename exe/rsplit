@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
 
-require_relative '../lib/file_split_join_binary/splitter'
+require_relative '../lib/file_replicator/splitter'
 
-FileSplitJoinBinary::Splitter.new.split
+FileReplicator::Splitter.new.split
