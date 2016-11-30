@@ -1,25 +1,22 @@
-require 'digest'
 require 'fileutils'
 
 require 'pastel'
 require 'ruby-progressbar'
 
 require_relative 'splitter_cmd_parse'
+require_relative 'checksum'
 
 module FileReplicator
-
   class Splitter
     READ_BUFFER = 256 * 1024
 
-    attr_reader :files, :options, :colour, :digest
-
     def initialize
       @options = SplitterCmdParse.new.get_options
-      @colour  = Pastel.new enabled: !options[:no_colour]
-      @files   = Dir.glob File.expand_path(options[:files])
+      @colour  = Pastel.new enabled: !@options[:no_colour]
+      @files   = Dir.glob File.expand_path(@options[:files])
 
-      if (alg = options.to_h.fetch(:checksum, false))
-        @digest = Digest.const_get(alg.upcase).new
+      if (alg = @options.to_h.fetch(:checksum, false))
+        @checksum = Checksum.new alg
       end
     end
 
@@ -45,6 +42,8 @@ module FileReplicator
           )
         end
 
+        @checksum.start_new_file file_abs_path if chksum?
+
         output_file_pattern = pattern_to_path options[:pattern], file_path: file_abs_path
 
         File.open file_abs_path, 'rb' do |f|
@@ -63,11 +62,13 @@ module FileReplicator
             file_split_no += 1
             bytes_written = 0
             begin
+              # write to chunk file
+              @checksum.start_new_chunk output_file_path if chksum?
               split_file = File.open output_file_path, 'ab'
               while bytes_written <= split_size and (data = f.read(READ_BUFFER))
                 split_file.write data
                 bytes_written += READ_BUFFER
-                digest << data if chksum?
+                @checksum.add_chunk data if chksum?
               end
             rescue StandardError => e
               puts colour.bright_red e.message unless quiet?
@@ -77,14 +78,13 @@ module FileReplicator
             ensure
               split_file.close unless split_file.nil?
               file_pb.increment if progress?
-              digest.reset if chksum?
+              @checksum.append_chunk_checksum if chksum?
             end
           end
         end
 
         file_pb.finish if progress?
-
-        puts "Checksum: #{colour.white.on_black digest.hexdigest}" if chksum?
+        @checksum.append_file_checksum if chksum?
 
       end
 
