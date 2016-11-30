@@ -14,7 +14,7 @@ module FileReplicator
     attr_reader :files, :options, :colour, :digest
 
     def initialize
-      @options = SplitterCmdParse.new.parse
+      @options = SplitterCmdParse.new.get_options
       @colour  = Pastel.new enabled: !options[:no_colour]
       @files   = Dir.glob File.expand_path(options[:files])
 
