@@ -13,7 +13,6 @@ module FileReplicator
     def initialize
       @options = SplitterCmdParse.new.get_options
       @colour  = Pastel.new enabled: !@options[:no_colour]
-      @files   = Dir.glob File.expand_path(@options[:files])
 
       if (alg = @options.to_h.fetch(:checksum, false))
         @checksum = Checksum.new alg
@@ -21,36 +20,37 @@ module FileReplicator
     end
 
     def split
+      files = Dir.glob File.expand_path(@options[:files]).sort
       files.each do |file_name|
         file_abs_path = File.absolute_path(File.expand_path(file_name))
         file_size     = File.size(file_abs_path)
 
-        next if options.min_size? and file_size < size_in_bytes(options[:min_size])
+        next if @options.min_size? and file_size < size_in_bytes(@options[:min_size])
 
-        if options.size?
-          split_size         = size_in_bytes options[:size]
+        if @options.size?
+          split_size         = size_in_bytes @options[:size]
           number_of_elements = (file_size.to_f / split_size).ceil
-        elsif options.elements?
-          split_size         = (file_size.to_f / options[:elements]).ceil
-          number_of_elements = options[:elements]
+        elsif @options.elements?
+          split_size         = (file_size.to_f / @options[:elements]).ceil
+          number_of_elements = @options[:elements]
         end
 
         if progress?
           file_pb = ProgressBar.create(
               total: number_of_elements,
-              title: colour.bright_blue("#{File.basename file_name}")
+              title: @colour.bright_blue("#{File.basename file_name}")
           )
         end
 
-        @checksum.start_new_file file_abs_path if chksum?
+        @checksum.start_new_file File.join(@options[:output_dir], File.basename(file_name)) if chksum?
 
-        output_file_pattern = pattern_to_path options[:pattern], file_path: file_abs_path
+        output_file_pattern = pattern_to_path @options[:pattern], file_path: file_abs_path
 
         File.open file_abs_path, 'rb' do |f|
           file_split_no = 0
           until f.eof? or f.closed?
             output_file_path = File.join(
-                options[:output_dir],
+                @options[:output_dir],
                 pattern_to_path(
                     output_file_pattern,
                     number:       file_split_no,
@@ -71,7 +71,7 @@ module FileReplicator
                 @checksum.add_chunk data if chksum?
               end
             rescue StandardError => e
-              puts colour.bright_red e.message unless quiet?
+              puts @colour.bright_red e.message unless quiet?
               f.close
               file_pb.stop if progress?
               exit 1
@@ -98,15 +98,15 @@ module FileReplicator
     end
 
     def quiet?
-      options.quiet?
+      @options.quiet?
     end
 
     def progress?
-      !options.no_progress? && !quiet?
+      !@options.no_progress? && !quiet?
     end
 
     def chksum?
-      !digest.nil? && !quiet?
+      !@checksum.nil? && !quiet?
     end
 
     def pattern_to_path(pattern, file_path: nil, number: nil, max_elements: nil)
@@ -119,17 +119,17 @@ module FileReplicator
       # {onu} - Incremental numbers starting at 1 and padded with zeros: [01, 02, ... 10, 11]
 
       unless file_path.nil?
-        pattern = pattern.gsub(/\{ord\}/, '%{ord}') % { ord: File.dirname(file_path) }
-        pattern = pattern.gsub(/\{orf\}/, '%{orf}') % { orf: File.basename(file_path) }
-        pattern = pattern.gsub(/\{ore\}/, '%{ore}') % { ore: File.extname(file_path) }
-        pattern = pattern.gsub(/\{orb\}/, '%{orb}') % { orb: File.basename(file_path, File.extname(file_path)) }
+        pattern = pattern.gsub(/\{ord\}i/, '%{ord}') % { ord: File.dirname(file_path) }
+        pattern = pattern.gsub(/\{orf\}i/, '%{orf}') % { orf: File.basename(file_path) }
+        pattern = pattern.gsub(/\{ore\}i/, '%{ore}') % { ore: File.extname(file_path) }
+        pattern = pattern.gsub(/\{orb\}i/, '%{orb}') % { orb: File.basename(file_path, File.extname(file_path)) }
       end
 
-      pattern = pattern.gsub(/\{num\}/, '%{num}') % { num: number } unless number.nil?
+      pattern = pattern.gsub(/\{num\}i/, '%{num}') % { num: number } unless number.nil?
 
       unless number.nil? and max_elements.nil?
         padded_num = number.to_s.rjust max_elements.to_s.length, '0'
-        pattern    = pattern.gsub(/\{onu\}/, '%{onu}') % { onu: padded_num }
+        pattern    = pattern.gsub(/\{onu\}i/, '%{onu}') % { onu: padded_num }
       end
 
       pattern

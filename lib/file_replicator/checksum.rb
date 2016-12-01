@@ -40,8 +40,8 @@ module FileReplicator
       raise 'No checksum file path is defined' if @file_path.nil?
 
       chk_filename = "#{@file_path}.#{@alg.downcase}"
-      File.new chk_filename, 'a' do |f|
-        f.write "#{hexdigest}  #{File.basename(checksummed_file_path)}"
+      File.open chk_filename, 'a' do |f|
+        f.write "#{hexdigest}  #{File.basename(checksummed_file_path)}\n"
       end
     end
 

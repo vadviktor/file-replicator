@@ -164,10 +164,20 @@ module FileReplicator
 
     def readme
       <<-TXT
+      
+  #{header 'Input file pattern:'}
+
+    To define what file(s) are to be processed you can use Ruby's Dir.glob patterns (https://ruby-doc.org/core-2.3.0/Dir.html#method-c-glob).
+    For this, not to get shells' path translation to interfere, you must put the path pattern in between double (or single) quotes.
+
+    e.g.:
+      $ rsplit -f "/mnt/tv*.mkv"
+    will match a file like: /mnt/tv42.mkv. 
+
   #{header 'Output file patterns:'}
 
     Use these building blocks to extract, reuse and add parts to construct output filenames.
-    The patterns are case insensitive and the surroing curly braces are part of them (see example).
+    The patterns are case insensitive and the surrounding curly braces are part of them (see example).
 
     #{highlight '{ord}'} - Original, absolute directory
     #{highlight '{orf}'} - Original filename, with extension
