@@ -181,10 +181,11 @@ module FileReplicator
 
     #{highlight '{ord}'} - Original, absolute directory
     #{highlight '{orf}'} - Original filename, with extension
-    #{highlight '{ore}'} - File's (last) extension
+    #{highlight '{ore}'} - File's (last) extension with the lead dot: .jpg
     #{highlight '{orb}'} - File's name without it's extension
     #{highlight '{num}'} - Incremental numbers starting at 1: [1, 2, 3, ...]
     #{highlight '{onu}'} - Incremental numbers starting at 1 and padded with zeros: [01, 02, ... 10, 11]
+    #{highlight '{gcn}'} - Incremental numbers starting at 1: [1, 2, 3, ...], used in multi file scenario
 
 
   #{header 'Output file sizes:'}

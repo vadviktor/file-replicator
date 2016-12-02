@@ -20,8 +20,10 @@ module FileReplicator
     end
 
     def split
-      files = Dir.glob File.expand_path(@options[:files]).sort
+      file_no = 0
+      files   = Dir.glob(File.expand_path(@options[:files])).sort
       files.each do |file_name|
+        file_no       += 1
         file_abs_path = File.absolute_path(File.expand_path(file_name))
         file_size     = File.size(file_abs_path)
 
@@ -42,24 +44,26 @@ module FileReplicator
           )
         end
 
-        @checksum.start_new_file File.join(@options[:output_dir], File.basename(file_name)) if chksum?
-
-        output_file_pattern = pattern_to_path @options[:pattern], file_path: file_abs_path
+        @checksum.start_new_file File.join(@options[:output_dir],
+                                           File.basename(file_name)) if chksum?
 
         File.open file_abs_path, 'rb' do |f|
           file_split_no = 0
+
           until f.eof? or f.closed?
+            file_split_no    += 1
             output_file_path = File.join(
                 @options[:output_dir],
-                pattern_to_path(
-                    output_file_pattern,
-                    number:       file_split_no,
+                self.class.pattern_to_path(
+                    @options[:pattern],
+                    file_path:    file_abs_path,
+                    file_number:  file_no,
+                    chunk_number: file_split_no,
                     max_elements: number_of_elements
-                )
-            )
+                ))
+
             prepare output_file_path
 
-            file_split_no += 1
             bytes_written = 0
             begin
               # write to chunk file
@@ -109,30 +113,44 @@ module FileReplicator
       !@checksum.nil? && !quiet?
     end
 
-    def pattern_to_path(pattern, file_path: nil, number: nil, max_elements: nil)
+    def self.pattern_to_path(pattern, file_path: nil, chunk_number: nil,
+        max_elements: nil, file_number: nil)
       # Patterns:
       # {ord} - Original, absolute directory
       # {orf} - Original filename, with extension
-      # {ore} - File's (last) extension
+      # {ore} - File's (last) extension with the lead dot: .jpg
       # {orb} - File's name without it's extension
       # {num} - Incremental numbers starting at 1: [1, 2, 3, ...]
       # {onu} - Incremental numbers starting at 1 and padded with zeros: [01, 02, ... 10, 11]
+      # {gcn} - Incremental numbers starting at 1: [1, 2, 3, ...], used in multi file scenario
 
       unless file_path.nil?
-        pattern = pattern.gsub(/\{ord\}i/, '%{ord}') % { ord: File.dirname(file_path) }
-        pattern = pattern.gsub(/\{orf\}i/, '%{orf}') % { orf: File.basename(file_path) }
-        pattern = pattern.gsub(/\{ore\}i/, '%{ore}') % { ore: File.extname(file_path) }
-        pattern = pattern.gsub(/\{orb\}i/, '%{orb}') % { orb: File.basename(file_path, File.extname(file_path)) }
+        pattern = pattern.gsub(/\{ord\}/i, '%{ord}') % {
+            ord: File.dirname(file_path) }
+
+        pattern = pattern.gsub(/\{orf\}/i, '%{orf}') % {
+            orf: File.basename(file_path) }
+
+        pattern = pattern.gsub(/\{ore\}/i, '%{ore}') % {
+            ore: File.extname(file_path) }
+
+        pattern = pattern.gsub(/\{orb\}/i, '%{orb}') % {
+            orb: File.basename(file_path, File.extname(file_path)) }
       end
 
-      pattern = pattern.gsub(/\{num\}i/, '%{num}') % { num: number } unless number.nil?
+      pattern = pattern.gsub(/\{num\}/i, '%{num}') % {
+          num: chunk_number } unless chunk_number.nil?
 
-      unless number.nil? and max_elements.nil?
-        padded_num = number.to_s.rjust max_elements.to_s.length, '0'
-        pattern    = pattern.gsub(/\{onu\}i/, '%{onu}') % { onu: padded_num }
+      pattern = pattern.gsub(/\{gcn\}/i, '%{gcn}') % {
+          gcn: file_number } unless file_number.nil?
+
+      unless chunk_number.nil? and max_elements.nil?
+        padded_num = chunk_number.to_s.rjust max_elements.to_s.length, '0'
+        pattern    = pattern.gsub(/\{onu\}/i, '%{onu}') % { onu: padded_num }
       end
 
-      pattern
+      # keep the path clean and valid
+      pattern.gsub "#{File::SEPARATOR}#{File::SEPARATOR}", File::SEPARATOR
     end
 
     def size_in_bytes(size_string)
