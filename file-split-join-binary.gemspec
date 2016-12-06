@@ -4,14 +4,14 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'file_replicator/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'file-split-join-binary'
+  spec.name          = 'file-replicator'
   spec.version       = FileReplicator::VERSION
   spec.authors       = ['Viktor (Icon) VAD']
   spec.email         = ['vad.viktor@gmail.com']
 
   spec.summary       = %q{Split and join files in binary mode}
   spec.description   = %q{Command line utility that can split files into chunks, join them together. All is done in binary mode making it encoding independent.}
-  spec.homepage      = 'https://github.com/vadviktor/file-split-join-binary-gem'
+  spec.homepage      = 'https://github.com/vadviktor/file-replicator'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|

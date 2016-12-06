@@ -1,5 +1,3 @@
-# :construction: This gem is not released yet :exclamation:
-
 # File replicator, a split-join command line tool
 
 This Gem provides you with two command line tools, one to split up files and one to join them back togather again.
@@ -84,7 +82,7 @@ The patterns are case insensitive and the surrounding curly braces are part of t
 
     {ord} - Original, absolute directory
     {orf} - Original filename, with extension
-    {ore} - File's (last) extension
+    {ore} - File's (last) extension with the lead dot: .jpg
     {orb} - File's name without it's extension
     {num} - Incremental numbers starting at 1: [1, 2, 3, ...]
     {onu} - Incremental numbers starting at 1 and padded with zeros: [01, 02, ... 10, 11]
@@ -111,15 +109,30 @@ will name the split files like:
 
 ### Joinging files
 
-    TODO
+Joining file chunks is a more basic operation with less options.
+Basically the supplied `rjoin` command is really just a little bit boosted linux `cat`.
 
-## Development
+YOu are able to combine a list of files in alphabetical order (as far as Ruby's Array#sort goes) by just defining the first and last file, and rjoin will get the file in between:
 
-    TODO
+    $ rjoin -f file.bin.001 -l file.bin.125 -o file.bin
+    
+will join the 125 chunks into file.bin. Work pretty good because the numbering is zero prefixed and alphabetical sorting will do it's job as you expect.
+
+## Todo list
+
+- [ ] Write a nice `--readme` for `rjoin`
+- [ ] Do checksum verification upon joining
+- [ ] Figure out more tests
 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/vadviktor/whatever. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](CODE_OF_CONDUCT.md) code of conduct. 
+
+1. Fork it (https://github.com/vadviktor/file-replicator/fork)
+2. Create your feature branch (git checkout -b my-new-feature)
+3. Commit your changes (git commit -am 'Add some feature')
+4. Push to the branch (git push origin my-new-feature)
+5. Create a new Pull Request
 
 ## License
 

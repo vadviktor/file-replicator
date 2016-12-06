@@ -84,12 +84,6 @@ class SplitterCommandLineParserTest < Minitest::Test
     }
   end
 
-  def test_output_directory_exists
-    assert_raises(ArgumentError) {
-      @parser.send :validate_directory, options_by_params(%w(-o sdf))
-    }
-  end
-
   private
 
   def options_by_params(params)

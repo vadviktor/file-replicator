@@ -1,14 +1,13 @@
-require 'fileutils'
-
 require 'pastel'
 require 'ruby-progressbar'
 
-require_relative 'splitter_cmd_parse'
 require_relative 'checksum'
+require_relative 'replicator_helper'
+require_relative 'splitter_cmd_parse'
 
 module FileReplicator
   class Splitter
-    READ_BUFFER = 256 * 1024
+    include ReplicatorHelper
 
     def initialize
       @options = SplitterCmdParse.new.get_options
@@ -21,30 +20,30 @@ module FileReplicator
 
     def split
       file_no = 0
-      files   = Dir.glob(File.expand_path(@options[:files])).sort
+      files   = Dir.glob(File.expand_path(options[:files])).sort
       files.each do |file_name|
         file_no       += 1
-        file_abs_path = File.absolute_path(File.expand_path(file_name))
+        file_abs_path = File.expand_path(file_name)
         file_size     = File.size(file_abs_path)
 
-        next if @options.min_size? and file_size < size_in_bytes(@options[:min_size])
+        next if options.min_size? and file_size < size_in_bytes(options[:min_size])
 
-        if @options.size?
-          split_size         = size_in_bytes @options[:size]
+        if options.size?
+          split_size         = size_in_bytes options[:size]
           number_of_elements = (file_size.to_f / split_size).ceil
-        elsif @options.elements?
-          split_size         = (file_size.to_f / @options[:elements]).ceil
-          number_of_elements = @options[:elements]
+        elsif options.elements?
+          split_size         = (file_size.to_f / options[:elements]).ceil
+          number_of_elements = options[:elements]
         end
 
         if progress?
           file_pb = ProgressBar.create(
               total: number_of_elements,
-              title: @colour.bright_blue("#{File.basename file_name}")
+              title: colour.bright_blue("#{File.basename file_name}")
           )
         end
 
-        @checksum.start_new_file File.join(@options[:output_dir],
+        @checksum.start_new_file File.join(options[:output_dir],
                                            File.basename(file_name)) if chksum?
 
         File.open file_abs_path, 'rb' do |f|
@@ -53,9 +52,9 @@ module FileReplicator
           until f.eof? or f.closed?
             file_split_no    += 1
             output_file_path = File.join(
-                @options[:output_dir],
+                options[:output_dir],
                 self.class.pattern_to_path(
-                    @options[:pattern],
+                    options[:pattern],
                     file_path:    file_abs_path,
                     file_number:  file_no,
                     chunk_number: file_split_no,
@@ -75,7 +74,7 @@ module FileReplicator
                 @checksum.add_chunk data if chksum?
               end
             rescue StandardError => e
-              puts @colour.bright_red e.message unless quiet?
+              puts colour.bright_red e.message unless quiet?
               f.close
               file_pb.stop if progress?
               exit 1
@@ -95,23 +94,6 @@ module FileReplicator
     end
 
     protected
-
-    def prepare(file_path)
-      FileUtils.mkdir_p File.dirname(file_path)
-      FileUtils.rm_f file_path
-    end
-
-    def quiet?
-      @options.quiet?
-    end
-
-    def progress?
-      !@options.no_progress? && !quiet?
-    end
-
-    def chksum?
-      !@checksum.nil? && !quiet?
-    end
 
     def self.pattern_to_path(pattern, file_path: nil, chunk_number: nil,
         max_elements: nil, file_number: nil)

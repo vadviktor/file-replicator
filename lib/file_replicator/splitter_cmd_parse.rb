@@ -1,38 +1,7 @@
-require 'pastel'
-require 'slop'
-
-require_relative 'checksum'
-require_relative 'exceptions'
-require_relative 'version'
+require_relative 'abstract_cmd_parse'
 
 module FileReplicator
-  class SplitterCmdParse
-
-    attr_reader :colour
-
-    def initialize
-      @colour = Pastel.new
-    end
-
-    def get_options
-      options = parse_argv
-
-      # display parameter list to let user know how to use them
-      if ARGV.empty?
-        puts options
-        exit
-      end
-
-      validate options
-
-      options
-    rescue MissingArgumentException,
-        ArgumentError,
-        Slop::MissingArgument,
-        Slop::UnknownOption => e
-      puts colour.bright_red e.message
-      exit 1
-    end
+  class SplitterCmdParse < AbstractCmdParse
 
     protected
 
@@ -139,7 +108,6 @@ module FileReplicator
       end
     end
 
-    # Validates the existence of a directory
     # @param [Slop] options
     # @raise ArgumentError
     def validate_directory(options)
@@ -147,25 +115,12 @@ module FileReplicator
         msg = 'Missing output path (-o)'
         raise MissingArgumentException.new msg
       end
-
-      unless File.directory? options[:output_dir]
-        msg = "#{options[:output_dir]} does not look like a directory (-o)"
-        raise ArgumentError.new msg
-      end
-    end
-
-    def header(txt)
-      colour.yellow.bold.underline txt
-    end
-
-    def highlight(txt)
-      colour.green.bold txt
     end
 
     def readme
       <<-TXT
-      
-  #{header 'Input file pattern:'}
+
+#{header 'Input file pattern:'}
 
     To define what file(s) are to be processed you can use Ruby's Dir.glob patterns (https://ruby-doc.org/core-2.3.0/Dir.html#method-c-glob).
     For this, not to get shells' path translation to interfere, you must put the path pattern in between double (or single) quotes.

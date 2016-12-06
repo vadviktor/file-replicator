@@ -1,33 +1,56 @@
-require 'fileutils'
+require 'pastel'
+require 'ruby-progressbar'
 
-new_file_name = '/home/ikon/tmp/new_talk.mkv'
-split_file_basename = '/home/ikon/tmp/talk.mkv'
-read_buffer      = 256 * 1024
+require_relative 'joiner_cmd_parse'
+require_relative 'replicator_helper'
 
-FileUtils.rm_f new_file_name
-File.open new_file_name, 'ab' do |f|
+module FileReplicator
+  class Joiner
+    include ReplicatorHelper
 
-  file_number = 0
-  loop do
-    file_number     += 1
-    split_part_file = "#{split_file_basename}.#{file_number}"
-    break unless File.exist? split_part_file
-
-    puts "Reading split file no. #{file_number}"
-    begin
-      split_file = File.open split_part_file, 'rb'
-      while (data = split_file.read(read_buffer))
-        print '.'
-        f.write data
-      end
-    rescue => e
-      puts "EXCEPTION: #{e.message}"
-      f.close
-    ensure
-      puts "\n" 'closing split file'
-      split_file.close unless split_file.nil?
+    def initialize
+      @options = JoinerCmdParse.new.get_options
+      @colour  = Pastel.new enabled: !@options[:no_colour]
     end
-  end
 
-  puts 'file joined, closing'
+    def join
+      files = Dir.glob(
+          File.join(
+              File.dirname(@options[:first]),
+              '*'
+          )
+      ).sort
+
+      prepare @options[:output_path]
+      output_file = File.open @options[:output_path], 'ab'
+
+      first_index = files.index File.expand_path(@options[:first])
+      last_index  = files.index File.expand_path(@options[:last])
+
+      if progress?
+        file_pb = ProgressBar.create(
+            total: (first_index..last_index).size,
+            title: colour.bright_blue("#{File.basename output_file}")
+        )
+      end
+      files[first_index..last_index].each do |file|
+        File.open file, 'rb' do |f|
+          while (data = f.read(READ_BUFFER))
+            output_file.write data
+          end
+        end
+        file_pb.increment if progress?
+      end
+
+      file_pb.finish if progress?
+    rescue StandardError => e
+      puts @colour.bright_red e.message unless quiet?
+      file_pb.stop if progress?
+
+      exit 1
+    ensure
+      output_file.close unless output_file.nil?
+    end
+
+  end
 end
