@@ -126,7 +126,7 @@ will join the 125 chunks into file.bin. Work pretty good because the numbering i
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/vadviktor/whatever. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](CODE_OF_CONDUCT.md) code of conduct. 
+Bug reports and pull requests are welcome on GitHub at https://github.com/vadviktor/file-replicator. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](CODE_OF_CONDUCT.md) code of conduct. 
 
 1. Fork it (https://github.com/vadviktor/file-replicator/fork)
 2. Create your feature branch (git checkout -b my-new-feature)
