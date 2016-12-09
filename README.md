@@ -1,3 +1,5 @@
+[![Gem Version](https://badge.fury.io/rb/file-replicator.svg)](https://badge.fury.io/rb/file-replicator)
+
 # File replicator, a split-join command line tool
 
 This Gem provides you with two command line tools, one to split up files and one to join them back togather again.
