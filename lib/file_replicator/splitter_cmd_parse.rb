@@ -161,8 +161,8 @@ module FileReplicator
     We can use a more human readable form to specify larger amounts just like for output sizes.
 
   #{header 'Supported checksum algorithms:'}
-    - #{highlight 'md5'} #{colour.cyan '(considered broken)'}
-    - #{highlight 'sha1'} #{colour.cyan '(considered broken)'}
+    - #{highlight 'md5'} (considered broken)
+    - #{highlight 'sha1'} (considered broken)
     - #{highlight 'sha224'}
     - #{highlight 'sha256'}
     - #{highlight 'sha384'}
