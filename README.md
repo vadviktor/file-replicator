@@ -109,7 +109,7 @@ will name the split files like:
   - You MUST use `{gcn}` in your file name as it will count the main files, so you will still be able to distinguish files.
   - Files, when gathered according the Dir.glob pattern will be then sorted by the default sort algorithm for Ruby Arrays. That is going to affect how the files are going to be numbered by `{gcn}`.
 
-### Joinging files
+### Joining files
 
 Joining file chunks is a more basic operation with less options.
 Basically the supplied `rjoin` command is really just a little bit boosted linux `cat`.
