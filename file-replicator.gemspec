@@ -22,10 +22,10 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'slop', '4.4.1'
-  spec.add_dependency 'pastel', '0.6.1'
+  spec.add_dependency 'pastel', '0.7.0'
   spec.add_dependency 'ruby-progressbar', '1.8.1'
 
-  spec.add_development_dependency 'bundler', '1.13.6'
+  spec.add_development_dependency 'bundler', '1.13.7'
   spec.add_development_dependency 'rake', '11.3.0'
   spec.add_development_dependency 'minitest', '5.9.1'
   spec.add_development_dependency 'minitest-reporters', '1.1.12'
